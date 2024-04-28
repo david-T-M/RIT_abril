@@ -1,0 +1,6 @@
+Experimento 1
+- Se prueba con la distancia de Jaro
+Experimento 2
+Se modifican la lista de relaciones generales y especificas y se usa una nueva medida de JaroWinclerDavid
+donde se toman en cuenta las contradicciones para dar un valor tomando en cuenta
+Experimento 3
