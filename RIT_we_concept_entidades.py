@@ -371,7 +371,23 @@ def jaro_distance_relacionadas(s1, s2,sinT,HipT,sinH,hipH) :
     #Return the Jaro Similarity 
     return (( match / len2  +
             (match - t) / match ) / 2.0),t; 
-    
+def relacion_noentailment(wt,wh):
+    try:
+        concepts_wt = Label.get(text=wt, language='en').concepts
+        concepts_wh = Label.get(text=wh, language='en').concepts
+        for e in edges_between(concepts_wt, concepts_wh):
+            if wt == e.start.text and e.relation.name in ["distinct_from","antonym"]:
+                print(e.start.text, "-", e.end.text, "|", e.relation.name,e)
+                return True
+    except:
+        pass
+    return False
+def negacion(nlp,texto):
+    doc = nlp(texto.lower())
+    for token in doc:
+        if(token.dep_=="neg"):
+            return 1, token.head.lemma_
+    return 0,""
 def jaro_distance_contra(s1, s2,antT,HipT,antH,HipH) :
     # antT=[]
     # antH=[]
@@ -590,22 +606,30 @@ hipotesis = prueba["sentence2"].to_list()
 
 # lista de listas para dataframe
 new_data = {'sumas' : [], 'distancias' : [], 'entropia_total' : [],'entropias' : [],'mutinf' : [], 
-            'mearts' : [], 'max_info' : [],  'list_comp' : [], 'diferencias' :[],
-            'list_M' : [], 'list_m' : [], 'list_T' : [], 'Jaro-Winkler_rit':[], 'clases' : []}
+            'mearts' : [], 'max_info' : [],  'list_comp' : [], 'diferencias' :[], 'list_incomp':[],
+            'list_M' : [], 'list_m' : [], 'list_T' : [], 'Jaro-Winkler_rit':[],
+            'negT' : [], 'verbT' : [], 'negH' : [], 'verbH':[], 
+            'clases' : []}
 inicio = time.time()
 for i in range(len(textos)):
     print(i)
     print(textos[i])
     #r_t,t_clean_m=representacion_entidades(nlp,textos[i])
     r_t,t_clean_m=representacion2(nlp,textos[i])
+    neg_t,negadat=negacion(nlp,textos[i])
+    new_data['negT'].append(neg_t)
+    new_data['verbT'].append(negadat)
     #print(list(r_t.keys()))
     for clave in r_t.keys():
-        print(clave,r_t[clave])
+        print("texto",clave,r_t[clave])
     print(hipotesis[i])
     #r_h,h_clean_m = representacion_entidades(nlp,hipotesis[i])
     r_h,h_clean_m = representacion2(nlp,hipotesis[i])
+    neg_h,negadah=negacion(nlp,hipotesis[i])
+    new_data['negH'].append(neg_h)
+    new_data['verbH'].append(negadah)
     for clave in r_h.keys():
-        print(clave,r_h[clave])
+        print("hipotesis",clave,r_h[clave])
         
     #print(list(r_h.keys()))
     # t_clean=' '.join(list(r_t.keys()))
@@ -643,10 +667,13 @@ for i in range(len(textos)):
     # print(h_vectors)
     # print(t_clean_m,h_clean_m)
     
+    # s1=t_clean_m.split()
+    # s2=h_clean_m.split()
     t_lem=ut.get_lemmas_(textos[i],nlp)
     h_lem=ut.get_lemmas_(hipotesis[i],nlp)
     s1=t_lem
     s2=h_lem
+    
     sinT=[]
     antT=[]
     HipT=[]
@@ -658,18 +685,13 @@ for i in range(len(textos)):
     # # encontrar bolsa de sinonimos de cada token
     for t in s1:
         sinT.append(bag_of_synonyms(t))
-        antT.append(bag_of_antonyms(t))
         HipT.append(bag_of_hyperonyms(t))
 
-    for h in s1:
+    for h in s2:
         sinH.append(bag_of_synonyms(h))
-        antH.append(bag_of_antonyms(h))
-        HipH.append(bag_of_hyperonyms(h))
         hipH.append(bag_of_hyponyms(h))
-    
-    # t_lem=ut.get_lemmas_(t_clean_m,nlp)
-    # h_lem=ut.get_lemmas_(h_clean_m,nlp)
-
+    print(t_lem)
+    print(h_lem)
     tp1=jaro_distance(t_lem, h_lem,sinT,sinH,HipT,hipH)
     new_data['Jaro-Winkler_rit'].append(tp1)
     # #new_data['c_estructura'].append(tp2)
@@ -700,7 +722,7 @@ for i in range(len(textos)):
     # # #el sujeto se une con este verbo a un complemento obligatorio llamado atributo que por lo general determina 
     # # alguna propiedad, estado o equivalencia del mismo, por ejemplo: "Este plato es bueno". "Juan está casado".
     c_compatibilidad=0
-    # c_incompatibilidad=0
+    c_incompatibilidad=0
     # c_rel_concep=0
     b_col=[0]
 
@@ -725,30 +747,33 @@ for i in range(len(textos)):
             #print(a[j]+"_"+b[j] not in combinaciones,a[j]+"_"+b[j],combinaciones)
             if a[j]+"_"+b[j] not in combinaciones:
                 combinaciones.append(a[j]+"_"+b[j])
-                if a[j]==b[j]: ## Si son palabras identicas entonces no hacemos más proceso
-                    #print(a[j],b[j],True,"misma palabra")
+                if(relacion_noentailment(a[j],b[j])):
+                    c_incompatibilidad+=1
+                elif a[j]==b[j]: ## Si son palabras identicas entonces no hacemos más proceso
+                    print(a[j],b[j],True,"misma palabra")
                     if 'NA'!=r_h[b[j]]:
                         for mod_h in r_h[b[j]].split(","):
                             for mod_t in r_t[a[j]].split(","):
-                                #print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
                                 if(relacion_entailment(mod_t,mod_h)):
+                                    print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
                                     borrar.append(b[j])
                                     c_compatibilidad+=1
                                 elif(mod_t==mod_h):
-                                    #print(mod_t,mod_h,"la misma")
+                                    print(mod_t,mod_h,"la misma")
                                     borrar.append(b[j])
                                     c_compatibilidad+=1
                     else:
                         borrar.append(b[j])
                         c_compatibilidad+=1
                 else:# en otro caso buscamos una relación de generalidad
-                    # print(r_t[a[j]].split(","))
-                    # print(r_h[b[j]].split(","))
+                    print(r_t[a[j]].split(","))
+                    print(r_h[b[j]].split(","))
                     r_e = relacion_entailment(a[j],b[j])
                     if r_e:
-                        #print(a[j],b[j], r_e)
-                        #print("checar atributos")
-                        if 'NA'!=r_h[b[j]]:
+                        print(a[j],b[j], r_e)
+                        print("checar atributos")
+                        if 'NA' !=r_h[b[j]]:
+                            print("lo que tiene:",b[j],r_h[b[j]])
                             for mod_h in r_h[b[j]].split(","):
                                 if 'NA'!=r_t[a[j]]:
                                     for mod_t in r_t[a[j]].split(","):
@@ -764,55 +789,64 @@ for i in range(len(textos)):
                                                 c_compatibilidad+=1
                         else:
                             borrar.append(b[j])
+                            c_compatibilidad+=1
                     else:
-                        #print("Proceso de conjuntos")
+                        print("Proceso de conjuntos")
                         sin1=bag_of_synonyms(a[j])
                         sin2=bag_of_synonyms(b[j])
                         if len(sin1.intersection(sin2))>0:
-                            #print(a[j],b[j],"conjuntos de sinonimos",sin1.intersection(sin2))
-                            #print("checar atributos")
+                            print(a[j],b[j],"conjuntos de sinonimos",sin1.intersection(sin2))
+                            print("checar atributos")
                             if 'NA'!=r_h[b[j]]:
+                                print("lo que tiene:",b[j],r_h[b[j]])
                                 for mod_h in r_h[b[j]].split(","):
                                     if 'NA'!=r_t[a[j]]:
                                         for mod_t in r_t[a[j]].split(","):
-                                            #print(mod_h,mod_t)
+                                            print(mod_h,mod_t)
                                             if mod_h==mod_t:
-                                                #print(mod_t,mod_h,True)
+                                                print(mod_t,mod_h,True)
                                                 borrar.append(b[j])
                                                 c_compatibilidad+=1
                                             else:
                                                 if(relacion_entailment(mod_t,mod_h)):
-                                                    #print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
+                                                    print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
                                                     borrar.append(b[j])
                                                     c_compatibilidad+=1
+                            else:
+                                borrar.append(b[j])
+                                c_compatibilidad+=1
                         else:
                             Hip1=set()
                             for e in list(sin1):
                                 Hip1=Hip1.union(bag_of_hyperonyms(e))
                             if len(Hip1.intersection(sin2))>0:
-                                #print(a[j],b[j],"Hiperonimos y sinonimos",Hip1.intersection(sin2))
-                                #print("checar atributos")
+                                print(a[j],b[j],"Hiperonimos y sinonimos",Hip1.intersection(sin2))
+                                print("checar atributos")
                                 if 'NA'!=r_h[b[j]]:
+                                    print("lo que tiene:",b[j],r_h[b[j]])
                                     for mod_h in r_h[b[j]].split(","):
                                         if 'NA'!=r_t[a[j]]:
                                             for mod_t in r_t[a[j]].split(","):
-                                                #print(mod_h,mod_t)
+                                                print(mod_h,mod_t)
                                                 if mod_h==mod_t:
-                                                    #print(mod_t,mod_h,True)
+                                                    print(mod_t,mod_h,True)
                                                     borrar.append(b[j])
                                                     c_compatibilidad+=1
                                                 else:
                                                     if(relacion_entailment(mod_t,mod_h)):
-                                                        #print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
+                                                        print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
                                                         borrar.append(b[j])
                                                         c_compatibilidad+=1
+                                else:
+                                    borrar.append(b[j])
+                                    c_compatibilidad+=1
                             else:
                                 hip2=set()
                                 for e in list(sin2):
                                     hip2=hip2.union(bag_of_hyponyms(e))
                                 if len(sin1.intersection(hip2))>0:
-                                    #print(a[j],b[j],"Sinonimos e hiponimos",sin1.intersection(hip2))
-                                    #print("checar atributos")
+                                    print(a[j],b[j],"Sinonimos e hiponimos",sin1.intersection(hip2))
+                                    print("checar atributos")
                                     if 'NA'!=r_h[b[j]]:
                                         for mod_h in r_h[b[j]].split(","):
                                             if 'NA'!=r_t[a[j]]:
@@ -827,6 +861,9 @@ for i in range(len(textos)):
                                                             #print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
                                                             borrar.append(b[j])
                                                             c_compatibilidad+=1
+                                    else:
+                                        borrar.append(b[j])
+                                        c_compatibilidad+=1
             #else:
                 #print(a[j],b[j],"ya se habia revisado")
         for equal in iguales:
@@ -870,7 +907,7 @@ for i in range(len(textos)):
         new_data['diferencias'].append(len(ma.columns)/len(ma.index))
 
     new_data['list_comp'].append(c_compatibilidad)
-    # new_data['list_incomp'].append(c_incompatibilidad)
+    new_data['list_incomp'].append(c_incompatibilidad)
     # new_data['list_rel_con'].append(c_rel_concep)
     # new_data['list_relaciones'].append(parejas)
     # new_data['listas_malignf'].append(ma)
