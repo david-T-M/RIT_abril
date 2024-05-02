@@ -717,17 +717,17 @@ diccionario_sinonimos=dict()
 diccionario_hiperonimos=dict()
 diccionario_hyponimos=dict()
 
-# df_temp=pd.read_pickle("salida/nuevo3/Synonyms.pickle")
-# for index,strings in df_temp.iterrows():
-#     diccionario_sinonimos[strings['word']]=strings['Synonym']
+df_temp=pd.read_pickle("salida/nuevo3/Synonyms.pickle")
+for index,strings in df_temp.iterrows():
+    diccionario_sinonimos[strings['word']]=strings['Synonym']
 
-# df_temp=pd.read_pickle("salida/nuevo3/Hyperonyms.pickle")
-# for index,strings in df_temp.iterrows():
-#     diccionario_hiperonimos[strings['word']]=strings['Hyperonym']
+df_temp=pd.read_pickle("salida/nuevo3/Hyperonyms.pickle")
+for index,strings in df_temp.iterrows():
+    diccionario_hiperonimos[strings['word']]=strings['Hyperonym']
 
-# df_temp=pd.read_pickle("salida/nuevo3/Hyponyms.pickle")
-# for index,strings in df_temp.iterrows():
-#     diccionario_hyponimos[strings['word']]=strings['Hyponym']
+df_temp=pd.read_pickle("salida/nuevo3/Hyponyms.pickle")
+for index,strings in df_temp.iterrows():
+    diccionario_hyponimos[strings['word']]=strings['Hyponym']
 
 inicio = time.time()
 for i in range(len(textos)):
