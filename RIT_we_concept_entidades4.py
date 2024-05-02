@@ -709,7 +709,7 @@ hipotesis = prueba["sentence2"].to_list()
 new_data = {'sumas' : [], 'distancias' : [], 'entropia_total' : [],'entropias' : [],'mutinf' : [], 
             'mearts' : [], 'max_info' : [],  'list_comp' : [], 'diferencias' :[], 'list_incomp':[],
             'list_M' : [], 'list_m' : [], 'list_T' : [], 'Jaro-Winkler_rit':[],
-            'negT' : [], 'verbT' : [], 'negH' : [], 'verbH':[], 'clases' : []}
+            'negT' : [], 'verbT' : [], 'negH' : [], 'verbH':[], 'overlap_ent':[],'clases' : []}
 
 
 # cargar los conjuntos de sinonimos, hyperonimos e hyponimos
@@ -735,7 +735,7 @@ for i in range(len(textos)):
     print(textos[i])
     # #r_t,t_clean_m=representacion_entidades(nlp,textos[i])
     # #r_t,t_clean_m=representacion2(nlp,textos[i])
-    # r_t,t_clean_m=representacion(nlp,textos[i])
+    r_t,t_clean_m=representacion(nlp,textos[i])
     neg_t,negadat=negacion(nlp,textos[i])
     new_data['negT'].append(neg_t)
     new_data['verbT'].append(negadat)
@@ -745,13 +745,13 @@ for i in range(len(textos)):
     print(hipotesis[i])
     # #r_h,h_clean_m = representacion_entidades(nlp,hipotesis[i])
     # #r_h,h_clean_m = representacion2(nlp,hipotesis[i])
-    # r_h,h_clean_m = representacion(nlp,hipotesis[i])
+    r_h,h_clean_m = representacion(nlp,hipotesis[i])
     neg_h,negadah=negacion(nlp,hipotesis[i])
     new_data['negH'].append(neg_h)
     new_data['verbH'].append(negadah)
     # for clave in r_h.keys():
     #     print("hipotesis",clave,r_h[clave])
-        
+    new_data['overlap_ent'].append(len(set(t_clean_m).intersection(set(h_clean_m)))/len(set(h_clean_m)))
     # #print(list(r_h.keys()))
     # # t_clean=' '.join(list(r_t.keys()))
     # # h_clean=' '.join(list(r_h.keys()))
