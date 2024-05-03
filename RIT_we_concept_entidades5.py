@@ -45,7 +45,7 @@ def entropia(X):
     probs = [np.mean(X == valor) for valor in set(X)]
     return round(sum(-p * np.log2(p) for p in probs), 3)
 
-relaciones_generales=["related_to","is_a","etymologically_related_to","manner_of","has_a","derived_from","has_property","form_of","causes","has_prerequisite","has_subevent","has_first_subevent"]
+relaciones_generales=["is_a","etymologically_related_to","manner_of","has_a","derived_from","has_property","form_of","causes","has_prerequisite","has_subevent","has_first_subevent"]
 relaciones_especificas=["is_a","manner_of","has_a","derived_from","has_property","form_of","causes","has_prerequisite","has_subevent","has_first_subevent"]
 
 def bag_of_synonyms(word):
@@ -929,6 +929,10 @@ for i in range(len(textos)):
                             if len(sin1.intersection(hip2))>0:   
                                 borrar.append(b[j])
                                 c_compatibilidad+=1
+                            else:                              
+                                if len(Hip1.intersection(hip2))>0:   
+                                    borrar.append(b[j])
+                                    c_compatibilidad+=1
         pasada+=1
         ma = ma.drop(borrar,axis=1)
         m_earth = m_earth.drop(borrar,axis=1)
@@ -967,11 +971,11 @@ for i in range(len(textos)):
     print(ma)
 fin = time.time()
 df_resultados = pd.DataFrame(new_data)
-df_resultados.to_pickle("salida/nuevo4/"+sys.argv[1]+"_.pickle")
-df = pd.DataFrame([[key, diccionario_sinonimos[key]] for key in diccionario_sinonimos.keys()], columns=['word', 'Synonym'])
-df.to_pickle("salida/nuevo4/"+sys.argv[1]+"_Synonym.pickle")
-df = pd.DataFrame([[key, diccionario_hiperonimos[key]] for key in diccionario_hiperonimos.keys()], columns=['word', 'Hyperonym'])
-df.to_pickle("salida/nuevo4/"+sys.argv[1]+"_Hyperonym.pickle")
-df = pd.DataFrame([[key, diccionario_hyponimos[key]] for key in diccionario_hyponimos.keys()], columns=['word', 'Hyponym'])
-df.to_pickle("salida/nuevo4/"+sys.argv[1]+"_Hyponym.pickle")
+df_resultados.to_pickle("salida/nuevo5/"+sys.argv[1]+"_.pickle")
+# df = pd.DataFrame([[key, diccionario_sinonimos[key]] for key in diccionario_sinonimos.keys()], columns=['word', 'Synonym'])
+# df.to_pickle("salida/nuevo5/"+sys.argv[1]+"_Synonym.pickle")
+# df = pd.DataFrame([[key, diccionario_hiperonimos[key]] for key in diccionario_hiperonimos.keys()], columns=['word', 'Hyperonym'])
+# df.to_pickle("salida/nuevo5/"+sys.argv[1]+"_Hyperonym.pickle")
+# df = pd.DataFrame([[key, diccionario_hyponimos[key]] for key in diccionario_hyponimos.keys()], columns=['word', 'Hyponym'])
+# df.to_pickle("salida/nuevo5/"+sys.argv[1]+"_Hyponym.pickle")
 print("Tiempo que se llevo:",round(fin-inicio,2)," segundos")

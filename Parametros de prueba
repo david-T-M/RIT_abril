@@ -3,4 +3,20 @@ Experimento 1
 Experimento 2
 Se modifican la lista de relaciones generales y especificas y se usa una nueva medida de JaroWinclerDavid
 donde se toman en cuenta las contradicciones para dar un valor tomando en cuenta
+
 Experimento 3
+Se obtienen los conjuntos en un diccionario de sinonimos, hiperonimos e hiponimos
+Se mantiene una busqueda de cohiponimia y contradiccion
+Se obtienen resultados de los corpus RTE3, GHS y SICK en 2ways
+Se obtienen resultados de los corpus RTE3, SICK, SNLI en 3ways
+
+Experimento 4
+Con base a los conjuntos anteriores se procesa nuevamente, reduciendo los tiempos de ejecución
+Se agrega una caracteristicas de overlap sobre las entidades obtenidas
+Se obtienen resultados de los corpus RTE3, GHS se tienen valores similares al experimento 3
+Se obtienen resultados de los corpus SICK en 2ways, donde se obtuvieron avances en rendimiento
+Se obtienen resultados de los corpus RTE3, SICK, SNLI en 3ways, aqui también se obtuvieron avances
+
+Experimento 5
+Quitamos la relacion related_to y agregamos la condición del overlap donde se tiene que dividir entre 0
+Se agrega en la reducción de la matriz la relación H intersection h
