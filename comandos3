@@ -207,7 +207,7 @@ nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades3.py "SNLI/TRAIN
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades3.py "SNLI/TRAIN10000/TRAIN_54.csv"> salida/nuevo3/SNLI/log/salidaTRAIN54.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades3.py "SNLI/TRAIN10000/TRAIN_55.csv"> salida/nuevo3/SNLI/log/salidaTRAIN55.txt &
 
-
+MultiNLI
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades3.py "MultiNLI/DEVM/DEV_1.csv"> salida/nuevo3/MultiNLI/log/salidaDEVM1.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades3.py "MultiNLI/DEVMM/DEV_1.csv"> salida/nuevo3/MultiNLI/log/salidaDEVMM1.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades3.py "MultiNLI/TRAIN/TRAIN_1.csv"> salida/nuevo3/MultiNLI/log/salidaTRAIN1.txt &

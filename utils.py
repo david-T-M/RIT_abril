@@ -146,6 +146,25 @@ def get_lemmas6_(text, nlp, lemmatize=True):
         #        token.shape_, token.is_alpha, token.is_stop)
         
     return words
+
+def get_lemmasALL_(text, nlp, lemmatize=True):
+
+    text = clean_text(str(text)).lower()    
+
+    # Process the document via Spacy's nlp
+    doc = nlp(text)
+
+    # Get processed words removing undesired POS
+    words=[]
+    for token in doc:
+        # if token.pos_ in ["NUM","PROPN","NOUN","VERB","ADJ","ADV","PRON","ADP","SCONJ"] or token.dep_ =="neg":
+        #     if token.lemma_ !="be":
+        words.append(token.lemma_)
+        #print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_,
+        #        token.shape_, token.is_alpha, token.is_stop)
+        
+    return words
+
 def get_words(text, nlp, pos_to_remove=['PUNCT'], normed=True,
     lemmatize=False):
 
