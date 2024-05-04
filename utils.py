@@ -129,7 +129,7 @@ def get_lemmas_(text, nlp, lemmatize=True):
         #        token.shape_, token.is_alpha, token.is_stop)
         
     return words
-def get_lemmas5_(text, nlp, lemmatize=True):
+def get_lemmas6_(text, nlp, lemmatize=True):
 
     text = clean_text(str(text)).lower()    
 

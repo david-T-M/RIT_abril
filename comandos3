@@ -253,3 +253,8 @@ nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades3.py "MultiNLI/T
 
 
 
+
+
+GLUE
+nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades3.py "RTEGLUE/TRAIN_1.csv"> salida/nuevo3/RTEGLUE/log/salidaRTE_TRAIN1.txt &
+nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades3.py "RTEGLUE/DEV_1.csv"> salida/nuevo3/RTEGLUE/log/salidaRTE_DEV1.txt &

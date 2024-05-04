@@ -9,14 +9,27 @@ Se obtienen los conjuntos en un diccionario de sinonimos, hiperonimos e hiponimo
 Se mantiene una busqueda de cohiponimia y contradiccion
 Se obtienen resultados de los corpus RTE3, GHS y SICK en 2ways
 Se obtienen resultados de los corpus RTE3, SICK, SNLI en 3ways
+Se obtienen resultados del corpus RTEGLUE para ver como esta nuestro modelo y compararlo con GLUE benchmark
 
+***************************************************************
 Experimento 4
 Con base a los conjuntos anteriores se procesa nuevamente, reduciendo los tiempos de ejecución
-Se agrega una caracteristicas de overlap sobre las entidades obtenidas
+Se agrega una caracteristica de overlap sobre las entidades obtenidas
 Se obtienen resultados de los corpus RTE3, GHS se tienen valores similares al experimento 3
 Se obtienen resultados de los corpus SICK en 2ways, donde se obtuvieron avances en rendimiento
-Se obtienen resultados de los corpus RTE3, SICK, SNLI en 3ways, aqui también se obtuvieron avances
+Se obtienen resultados de los corpus RTE3, SICK, SNLI en 3 ways, aqui también se obtuvieron avances interesantes
+contamos actualmente con 18 características de las cuales se va a realizar un estudio de ablación
 
 Experimento 5
 Quitamos la relacion related_to y agregamos la condición del overlap donde se tiene que dividir entre 0
 Se agrega en la reducción de la matriz la relación H intersection h
+
+Experimento 6
+--Agregar en la matriz de alinemiento algunas otras palabras ADP, SCONJ, ETC.
+--probar con todas, el detalle de esto es que 
+
+
+
+Cada vez que se genera un entrenamiento sobre los corpus anteriores, se agregan los sinonimos, hiperonimos e hiponimos 
+en el diccionario para reducir considerablemente los tiempos de ejecución de nuevos experimentos. Por ejemplo, el experimento 4 y 5 ya tardan menos en 
+procesar sus ejemplos para cada corpus.

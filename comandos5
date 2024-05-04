@@ -63,7 +63,7 @@ nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TRAIN
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TRAIN_30.csv"> salida/nuevo5/SICK/log/salidaTRAIN30.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TRAIN_31.csv"> salida/nuevo5/SICK/log/salidaTRAIN31.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TRAIN_32.csv"> salida/nuevo5/SICK/log/salidaTRAIN32.txt &
-nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TRAIN_3.csv"> salida/nuevo5/SICK/log/salidaTRAIN3.txt &
+nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TRAIN_33.csv"> salida/nuevo5/SICK/log/salidaTRAIN33.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TRAIN_34.csv"> salida/nuevo5/SICK/log/salidaTRAIN34.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TRAIN_35.csv"> salida/nuevo5/SICK/log/salidaTRAIN35.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TRAIN_36.csv"> salida/nuevo5/SICK/log/salidaTRAIN36.txt &
@@ -110,7 +110,7 @@ nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TEST_
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TEST_30.csv"> salida/nuevo5/SICK/log/salidaTEST30.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TEST_31.csv"> salida/nuevo5/SICK/log/salidaTEST31.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TEST_32.csv"> salida/nuevo5/SICK/log/salidaTEST32.txt &
-nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TEST_3.csv"> salida/nuevo5/SICK/log/salidaTEST3.txt &
+nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TEST_33.csv"> salida/nuevo5/SICK/log/salidaTEST33.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TEST_34.csv"> salida/nuevo5/SICK/log/salidaTEST34.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TEST_35.csv"> salida/nuevo5/SICK/log/salidaTEST35.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades5.py "SICK/TEST_36.csv"> salida/nuevo5/SICK/log/salidaTEST36.txt &
