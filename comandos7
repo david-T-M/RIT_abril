@@ -231,7 +231,6 @@ nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades7.py "MultiNLI/T
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades7.py "MultiNLI/TRAIN/TRAIN_13.csv"> salida/nuevo7/MultiNLI/log/salidaTRAIN13.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades7.py "MultiNLI/TRAIN/TRAIN_14.csv"> salida/nuevo7/MultiNLI/log/salidaTRAIN14.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades7.py "MultiNLI/TRAIN/TRAIN_15.csv"> salida/nuevo7/MultiNLI/log/salidaTRAIN15.txt &
-nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades7.py "MultiNLI/TRAIN/TRAIN_15.csv"> salida/nuevo7/MultiNLI/log/salidaTRAIN15.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades7.py "MultiNLI/TRAIN/TRAIN_16.csv"> salida/nuevo7/MultiNLI/log/salidaTRAIN16.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades7.py "MultiNLI/TRAIN/TRAIN_17.csv"> salida/nuevo7/MultiNLI/log/salidaTRAIN17.txt &
 nohup ../anaconda3/envs/rit/bin/python3 RIT_we_concept_entidades7.py "MultiNLI/TRAIN/TRAIN_18.csv"> salida/nuevo7/MultiNLI/log/salidaTRAIN18.txt &
