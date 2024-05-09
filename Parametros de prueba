@@ -19,15 +19,51 @@ Se obtienen resultados de los corpus RTE3, GHS se tienen valores similares al ex
 Se obtienen resultados de los corpus SICK en 2ways, donde se obtuvieron avances en rendimiento
 Se obtienen resultados de los corpus RTE3, SICK, SNLI en 3 ways, aqui también se obtuvieron avances interesantes
 contamos actualmente con 18 características de las cuales se va a realizar un estudio de ablación
-
+1- sumas
+2- distancias
+3- entropia_total
+4- entropias
+5- mutinf
+6- mearts
+7- max_info
+8- list_comp
+9- diferencias
+10- list_incomp
+11- list_M
+12- list_m
+13- list_T
+14- Jaro-Winkler_rit
+15- negT
+16- negH
+17- overlap_ent  Falta ajustarlo a como estaba antes en el experimento 2
+- clases
+***************************************************************************************************
 Experimento 5
 Quitamos la relacion related_to y agregamos la condición del overlap donde se tiene que dividir entre 0
 Se agrega en la reducción de la matriz la relación H intersection h
 
 Experimento 6
 --Agregar en la matriz de alinemiento algunas otras palabras ADP, SCONJ, ETC.
---probar con todas, el detalle de esto es que 
 
+Experimento 7
+--probar con todas, el detalle de esto es que algunas palabras son funcionales no agregana al significado
+
+El experimento 7 no tuvo buenos resultados pero sirvió para poder alimentar el diccionario de sinonimos, hiperonimos e hiponimos
+por lo que se cuenta con esos conjuntos que al usarlos reduce el tiempo de procesamiento.
+
+El siguiente paso es regresar al experimento 4 y agregar lo que se realizó en el experimento 6 para poder hacer unas prubeas
+Experimento 8 es una combinación del 4 y 6
+las diferencias son quitar la relación related_to y agregar otros tipos de palabras a la representación ADP, SCONJ, etc
+Se agregaran palabras y se
+identificar que palabras de cada corpus agrega significado
+y esas colocarlas y correr un experimento
+- se quita la relación related_to
+- distancias se busca la mininma
+- se borran las compatibilidad y las incompatibilidades
+
+Experimento 9
+no lematizamos el texto ni la hipotesis
+mismo proceso que el 8
 
 
 Cada vez que se genera un entrenamiento sobre los corpus anteriores, se agregan los sinonimos, hiperonimos e hiponimos 

@@ -127,7 +127,10 @@ def get_lemmas_(text, nlp, lemmatize=True):
                 words.append(token.lemma_)
         #print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_,
         #        token.shape_, token.is_alpha, token.is_stop)
-        
+    if len(words)==0:
+        for token in doc:
+            if token.pos_ not in ["PUNCT"]:
+                words.append(token.lemma_)
     return words
 def get_lemmas6_(text, nlp, lemmatize=True):
 
@@ -139,12 +142,30 @@ def get_lemmas6_(text, nlp, lemmatize=True):
     # Get processed words removing undesired POS
     words=[]
     for token in doc:
-        if token.pos_ in ["NUM","PROPN","NOUN","VERB","ADJ","ADV","PRON","ADP","SCONJ"] or token.dep_ =="neg":
+        if token.pos_ in ["NUM","PROPN","NOUN","VERB","ADJ","ADV","PRON","ADP","SCONJ"] or token.dep_ =="neg" or token.text in ["no","not"]:
             if token.lemma_ !="be":
                 words.append(token.lemma_)
         #print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_,
         #        token.shape_, token.is_alpha, token.is_stop)
         
+    return words
+def get_texts_(text, nlp, lemmatize=True):
+
+    text = clean_text(str(text)).lower()    
+
+    # Process the document via Spacy's nlp
+    doc = nlp(text)
+
+    # Get processed words removing undesired POS
+    words=[]
+    for token in doc:
+        if token.pos_ in ["NUM","PROPN","NOUN","VERB","ADJ","ADV","PRON","ADP","SCONJ"] or token.dep_ =="neg" or token.text in ["no","not"]:
+            if token.lemma_ !="be":
+                words.append(token.text)
+        #print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_,
+        #        token.shape_, token.is_alpha, token.is_stop)
+    if len(words)==0:
+        words=text.split()
     return words
 
 def get_lemmasALL_(text, nlp, lemmatize=True):
