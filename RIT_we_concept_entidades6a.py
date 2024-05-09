@@ -7,7 +7,7 @@ import time
 from scipy.stats import wasserstein_distance
 import sys
 from math import floor
-
+import pymeteor.pymeteor as pymeteor
 
 import conceptnet_lite
 conceptnet_lite.connect("../OPENAI/data/conceptnet.db")
@@ -98,83 +98,6 @@ def bag_of_hyponyms(word):
         pass
     return hiponimos
 
-def jaro_distanceDavid2(s1, s2,sinT,sinH,antT,antH,HipT,HipH,hipH) :
-    bandera=True
-
-    # Length of two strings
-    len1 = len(s1)
-    len2 = len(s2)
-
-    # If the listas de tokens are equal 
-    if len1==len2:
-        for i in range(len1):
-            if s1[i]!=s2[i]:
-                bandera=False
-                break
-        if (bandera):
-            return 1.0,0.0; 
- 
-    if (len1 == 0 or len2 == 0) :
-        return 0.0,0.0; 
- 
-    # Maximum distance upto which matching 
-    # is allowed 
-    max_dist = (max(len(s1), len(s2)) // 2 )-1 ; 
- 
-    # Count of matches 
-    match = 0; 
-    matchC = 0; 
- 
-    # Hash for matches 
-    hash_s1 = [0] * len(s1)
-    hash_s2 = [0] * len(s2)
- 
-    # Traverse through the first string 
-    for j in range(len2) : 
-        # Check if there is any matches 
-        for i in range(len1) : 
-            print(s1[i],s2[j])
-            # If there is a match or is contain in a bag of sinomys of tk
-            if ((s1[i] == s2[j] or s1[i] in sinH[j] or s2[j] in sinT[i]) and hash_s2[j] == 0) : 
-                print(s1[i],s2[j],"sinonimos")
-                hash_s1[i] += 1; 
-                hash_s2[j] += 1; 
-                match += 1; 
-                break
-            elif ((s1[i] in hipH[j] or len((sinT[i]).intersection(hipH[j]))>0) and hash_s2[j] == 0):
-                print("hiperonimos",s2[j],s1[i],(sinT[i]).intersection(hipH[j]))
-                hash_s1[i] += 1; 
-                hash_s2[j] += 1; 
-                match += 1; 
-                break
-            elif ((s2[j] in HipT[i] or len((sinH[j]).intersection(HipT[i]))>0) and hash_s2[j] == 0): 
-                print("hiperonimos sobre sinonimos",s2[j],s1[i])
-                hash_s1[i] += 1; 
-                hash_s2[j] += 1; 
-                match += 1; 
-                break
-            elif len((hipH[j]).intersection(HipT[i]))>0 and hash_s2[j] == 0: 
-                print("hiph HiperT",s2[j],s1[i],hipH[j],HipT[i],(hipH[j]).intersection(HipT[i]))
-                hash_s1[i] += 1; 
-                hash_s2[j] += 1; 
-                match += 1; 
-                break
-            elif ((s1[i] in antH[j] or s2[j] in antT[i]) and hash_s2[j] == 0) : 
-                print(s1[i],antH[j],s2[j],antT[i],"antonimos")
-                hash_s1[i] -= 1; 
-                hash_s2[j] -= 1; 
-                matchC += 1; 
-                break
-    print(hash_s1)
-    print(hash_s2)
-    print(len2)
-    print(match)
-    print(matchC)
-    # If there is no match 
-    if (match == 0) :
-        return 0.0,0.0; 
-    return match/len2 ,(len2-match-matchC)/len2; 
-
 def jaro_distance(s1, s2,sinT,sinH,HipT,hipH) :
     bandera=True
 
@@ -220,19 +143,19 @@ def jaro_distance(s1, s2,sinT,sinH,HipT,hipH) :
                 match += 1; 
                 break
             elif ((s1[i] in hipH[j] or len((sinT[i]).intersection(hipH[j]))>0) and hash_s2[j] == 0):
-                print("hiponimos",s1[i],s2[j],(sinT[i]).intersection(hipH[j]))
+                print("hiponimos",s2[j],s1[i],(sinT[i]).intersection(hipH[j]))
                 hash_s1[i] += 1; 
                 hash_s2[j] += 1; 
                 match += 1; 
                 break
             elif ((s2[j] in HipT[i] or len((sinH[j]).intersection(HipT[i]))>0) and hash_s2[j] == 0): 
-                print("hiperonimos sobre sinonimos",s1[i],s2[j])
+                print("hiperonimos sobre sinonimos",s2[j],s1[i])
                 hash_s1[i] += 1; 
                 hash_s2[j] += 1; 
                 match += 1; 
                 break
             elif len((hipH[j]).intersection(HipT[i]))>0 and hash_s2[j] == 0: 
-                print("hiperonimos3",s1[i],s2[j],(hipH[j]).intersection(HipT[i]))
+                print("hiperonimos3",s2[j],s1[i],(hipH[j]).intersection(HipT[i]))
                 hash_s1[i] += 1; 
                 hash_s2[j] += 1; 
                 match += 1; 
@@ -266,110 +189,10 @@ def jaro_distance(s1, s2,sinT,sinH,HipT,hipH) :
                 t += 1
             else :
                 point += 1    
-    t /= 2; 
+        t /= 2; 
     #Return the Jaro Similarity 
-    return match / len2; 
+    return (match / len2), (match/ len1 + match / len2 + (match - t) / match)/ 3.0; 
 
-def jaro_distance_relacionadas(s1, s2,sinT,HipT,sinH,hipH) :
-    # for t in s1:
-    #     sinT.append(bag_of_synonyms(t))
-    #     HipT.append(bag_of_hyperonyms(t))
-    # for h in s2:
-    #     sinH.append(bag_of_synonyms(h))
-    #     hipH.append(bag_of_hyponyms(h))
-    # print("sinonimos de T",sinT)
-    # print("Hiperonimos de T",HipT)
-    # print("sinonimos de H",sinH)
-    # print("hiponimos de h",hipH)
-
-    bandera=True
-
-    # Length of two strings
-    len1 = len(s1)
-    len2 = len(s2)
-
-    # If the listas de tokens are equal 
-    if len1==len2:
-        for i in range(len1):
-            if s1[i]!=s2[i]:
-                bandera=False
-                break
-        if (bandera):
-            return 1.0,0.0; 
- 
-    if (len1 == 0 or len2 == 0) :
-        return 0.0,0.0; 
- 
-    # Maximum distance upto which matching 
-    # is allowed 
-    max_dist = (max(len(s1), len(s2)) // 2 ); 
- 
-    # Count of matches 
-    match = 0; 
- 
-    # Hash for matches 
-    hash_s1 = [0] * len(s1)
-    hash_s2 = [0] * len(s2)
- 
-    # Traverse through the first string 
-    for i in range(len1):
-        # Check if there is any matches 
-        for j in range( max(0, i - max_dist), min(len2, i + max_dist + 1)):
-            #print(s1[i],s2[j])
-            # If there is a match or is contain in a bag of sinomys of tk
-            if ((s1[i] in hipH[j] or len((sinT[i]).intersection(hipH[j]))>0) and s1[i]!=s2[j] and hash_s2[j] == 0):
-                print("hiperonimos",s2[j],s1[i],(sinT[i]).intersection(hipH[j]))
-                hash_s1[i] += 1
-                hash_s2[j] += 1
-                match += 1
-                break
-            elif ((s2[j] in HipT[i] or len((sinH[j]).intersection(HipT[i]))>0) and s1[i]!=s2[j] and hash_s2[j] == 0): 
-                print("hiperonimos sobre sinonimos",s2[j],s1[i])
-                hash_s1[i] += 1 
-                hash_s2[j] += 1
-                match += 1
-                break
-            elif len((hipH[j]).intersection(HipT[i]))>0 and s1[i]!=s2[j] and hash_s2[j] == 0: 
-                print("hiperonimos3",s2[j],s1[i],(hipH[j]).intersection(HipT[i]))
-                hash_s1[i] += 1
-                hash_s2[j] += 1
-                match += 1
-                break
-    print(hash_s1)
-    print(hash_s2)
-    print(match)
-    # If there is no match 
-    if (match == 0) :
-        return 0.0,0.0; 
- 
-    # Number of transpositions 
-    t = 0; 
- 
-    point = 0; 
- 
-    # Count number of occurrences 
-    # where two characters match but 
-    # there is a third matched character 
-    # in between the indices 
-    for i in range(len1) : 
-        if (hash_s1[i]) :
- 
-            # Find the next matched character 
-            # in second string 
-            while (hash_s2[point] == 0) :
-                point += 1; 
- 
-            if (s1[i] != s2[point]) :
-                point += 1
-                t += 1
-            else :
-                point += 1
-                 
-    t /= 2; 
-    print(t)
-    #Return the Jaro Similarity 
-    return (( match / len2  +
-            (match - t) / match ) / 2.0),t; 
 def relacion_noentailment(wt,wh):
     try:
         concepts_wt = Label.get(text=wt, language='en').concepts
@@ -382,119 +205,12 @@ def relacion_noentailment(wt,wh):
         pass
     return False
 def negacion(nlp,texto):
-    b=1.0
-    if (type(texto)==type(b) or texto==""):
-        return 0,""
-    try:
-        doc = nlp(texto.lower())
-        for token in doc:
-            if(token.dep_=="neg"):
-                return 1, token.head.lemma_
-    except:
-        return 0,""    
+    doc = nlp(texto.lower())
+    for token in doc:
+        if(token.dep_=="neg"):
+            return 1, token.head.lemma_
     return 0,""
-def jaro_distance_contra(s1, s2,antT,HipT,antH,HipH) :
-    # antT=[]
-    # antH=[]
-    # HipT=[]
-    # HipH=[]
 
-    # for t in s1:
-    #     antT.append(bag_of_antonyms(t))
-    #     HipT.append(bag_of_hyperonyms(t))
-    # for h in s2:
-    #     antH.append(bag_of_antonyms(h))
-    #     HipH.append(bag_of_hyperonyms(h))
-    # print("antonimos de T",antT)
-    # print("antonimos de h",antH)
-    # print("Hiperonimos de T",HipT)
-    # print("Hiperonimos de H",HipH)
-
-    bandera=True
-
-    # Length of two strings
-    len1 = len(s1)
-    len2 = len(s2)
-
-    # If the listas de tokens are equal 
-    if len1==len2:
-        for i in range(len1):
-            if s1[i]!=s2[i]:
-                bandera=False
-                break
-        if (bandera):
-            return 1.0,0.0; 
- 
-    if (len1 == 0 or len2 == 0) :
-        return 0.0,0.0; 
- 
-    # Maximum distance upto which matching 
-    # is allowed 
-    max_dist = (max(len(s1), len(s2)) // 2 ) -1 ; 
- 
-    # Count of matches 
-    match = 0; 
- 
-    # Hash for matches 
-    hash_s1 = [0] * len(s1)
-    hash_s2 = [0] * len(s2)
- 
-    # Traverse through the first string 
-    for i in range(len1) : 
-            
-        # Check if there is any matches 
-        for j in range( max(0, i - max_dist),
-                    min(len2, i + max_dist + 1)) : 
-            #print(s1[i],s2[j])
-            # If there is a match or is contain in a bag of sinomys of tk
-            if ((s1[i] in antH[j] or s2[j] in antT[i]) and s1[i]!=s2[j] and hash_s2[j] == 0) : 
-                print(s1[i],s2[j],"antonimos")
-                hash_s1[i] += 1; 
-                hash_s2[j] += 1; 
-                match += 1; 
-                break
-            elif (len(HipH[j].intersection(HipT[i]))>0 and s1[i]!=s2[j] and hash_s2[j] == 0):
-                print(s1[i],s2[j],HipH[j].intersection(HipT[i]),"antonimos")
-                hash_s1[i] += 1; 
-                hash_s2[j] += 1; 
-                match += 1; 
-                break
-    print(hash_s1)
-    print(hash_s2)
-    print(match)
-    # If there is no match 
-    if (match == 0) :
-        return 0.0,0.0; 
- 
-    # Number of transpositions 
-    t = 0; 
- 
-    point = 0; 
- 
-    # Count number of occurrences 
-    # where two characters match but 
-    # there is a third matched character 
-    # in between the indices 
-    for i in range(len1) : 
-        if (hash_s1[i]) :
- 
-            # Find the next matched character 
-            # in second string 
-            while (hash_s2[point] == 0) :
-                point += 1; 
- 
-            if (s1[i] != s2[point]) :
-                point += 1
-                t += 1
-            else :
-                point += 1
-                 
-    t /= 2; 
-    print(t)
-    #Return the Jaro Similarity 
-    return (( match / len2 +
-            (match - t) / match ) / 2.0),t; 
-    
 def representacion_entidades(nlp,texto):
     doc = nlp(texto.lower())
     dir_sust=dict()
@@ -550,14 +266,7 @@ def representacion2(nlp,texto):
 
 deps_tags=["relcl","prep","amod","compound","pobj","conj","nsubj","advcl","dobj","neg",'acomp',"attr", 'nummod',"oprd","npadvmod"]
 palabras_no=["wear","dress","clothe"]
-
 def representacion(nlp,texto):
-    dir_sust=dict()
-    palabras=[]
-    b=1.0
-    if (type(texto)==type(b) or texto==""):
-        return dir_sust,palabras
-    
     doc =nlp(texto)
     # poses=[]
     # tokens=[]
@@ -721,8 +430,8 @@ hipotesis = prueba["sentence2"].to_list()
 # lista de listas para dataframe
 new_data = {'sumas' : [], 'distancias' : [], 'entropia_total' : [],'entropias' : [],'mutinf' : [], 
             'mearts' : [], 'max_info' : [],  'list_comp' : [], 'diferencias' :[], 'list_incomp':[],
-            'list_M' : [], 'list_m' : [], 'list_T' : [], 'Jaro-Winkler_rit':[],
-            'negT' : [], 'verbT' : [], 'negH' : [], 'verbH':[], 'overlap_ent':[],'clases' : []}
+            'list_M' : [], 'list_m' : [], 'list_T' : [], 'Jaro-Winkler_rit':[],'Jaro-Winkler':[],
+            'negT' : [], 'verbT' : [], 'negH' : [], 'verbH':[], 'overlap_ent':[],'meteor':[],'clases' : []}
 
 
 # cargar los conjuntos de sinonimos, hyperonimos e hyponimos
@@ -730,15 +439,15 @@ diccionario_sinonimos=dict()
 diccionario_hiperonimos=dict()
 diccionario_hyponimos=dict()
 
-df_temp=pd.read_pickle("salida/nuevo3/Synonyms.pickle")
+df_temp=pd.read_pickle("salida/nuevo4a/Synonyms.pickle")
 for index,strings in df_temp.iterrows():
     diccionario_sinonimos[strings['word']]=strings['Synonym']
 
-df_temp=pd.read_pickle("salida/nuevo3/Hyperonyms.pickle")
+df_temp=pd.read_pickle("salida/nuevo4a/Hyperonyms.pickle")
 for index,strings in df_temp.iterrows():
     diccionario_hiperonimos[strings['word']]=strings['Hyperonym']
 
-df_temp=pd.read_pickle("salida/nuevo3/Hyponyms.pickle")
+df_temp=pd.read_pickle("salida/nuevo4a/Hyponyms.pickle")
 for index,strings in df_temp.iterrows():
     diccionario_hyponimos[strings['word']]=strings['Hyponym']
 
@@ -764,50 +473,22 @@ for i in range(len(textos)):
     new_data['verbH'].append(negadah)
     # for clave in r_h.keys():
     #     print("hipotesis",clave,r_h[clave])
+
+    #AQUI DEBE DE REVISARSE LAS ENTIDADES A UN NIVEL MÁS PROFUNDO
     if len(set(h_clean_m))!=0 and len(set(t_clean_m))!=0:
         new_data['overlap_ent'].append(len(set(t_clean_m).intersection(set(h_clean_m)))/len(set(h_clean_m)))
     else:
         new_data['overlap_ent'].append(0)
-    # #print(list(r_h.keys()))
-    # # t_clean=' '.join(list(r_t.keys()))
-    # # h_clean=' '.join(list(r_h.keys()))
-    # t_clean=list(r_t.keys())
-    # h_clean=list(r_h.keys())
-    # print("clean")
-    # print(t_clean)
-    # print(h_clean)
-    # t_clean_m=ut.get_words(textos[i],nlp,pos_to_remove=['PUNCT'], normed=True,lemmatize=False)
-    # h_clean_m=ut.get_words(hipotesis[i],nlp,pos_to_remove=['PUNCT'], normed=True,lemmatize=False)
-    # print("get_words")
-    # print("clean_m")
-    # print(t_clean_m)
-    # print(h_clean_m)
-    # t_clean_m=ut.reform_sentence2(t_clean_m,nlp)
-    # h_clean_m=ut.reform_sentence2(h_clean_m,nlp)
-    # print("reform2")
-    # print(t_clean_m)
-    # print(h_clean_m)
-    # t_clean=ut.get_words_rep(t_clean_m,nlp,pos_to_remove=[""],normed=True,lemmatize=False)
-    # h_clean=ut.get_words_rep(h_clean_m,nlp,pos_to_remove=[""],normed=True,lemmatize=False)
-    # print("t_clean")
-    # print(t_clean)
-    # print(h_clean)
-    # print("clean_m")
-    # print(t_clean_m)
-    # print(h_clean_m)
-    t_lem=ut.get_texts_(textos[i],nlp)
-    h_lem=ut.get_texts_(hipotesis[i],nlp)
+
+    new_data['meteor'].append(pymeteor.meteor(textos[i], hipotesis[i]))
+    
+    t_lem=ut.get_lemmas6_(textos[i],nlp)
+    h_lem=ut.get_lemmas6_(hipotesis[i],nlp)
     t_vectors=ut.get_matrix_rep2(t_lem, nlp, normed=False)
     h_vectors=ut.get_matrix_rep2(h_lem, nlp, normed=False)
     t_vectors_n=ut.get_matrix_rep2(t_lem, nlp, normed=True)
     h_vectors_n=ut.get_matrix_rep2(h_lem, nlp, normed=True)
-    
-    # print(t_vectors)
-    # print(h_vectors)
-    # print(t_clean_m,h_clean_m)
-    
-    # s1=t_clean_m.split()
-    # s2=h_clean_m.split()
+
     for t in t_lem:
         if t not in diccionario_sinonimos:
             diccionario_sinonimos[t]=bag_of_synonyms(t)
@@ -844,19 +525,9 @@ for i in range(len(textos)):
         hipH.append(diccionario_hyponimos[h])
     print(t_lem)
     print(h_lem)
-    tp1=jaro_distance(t_lem, h_lem,sinT,sinH,HipT,hipH)
+    tp1,tp2=jaro_distance(t_lem, h_lem,sinT,sinH,HipT,hipH)
     new_data['Jaro-Winkler_rit'].append(tp1)
-    # #new_data['c_estructura'].append(tp2)
-    #new_data['nomatch'].append(tp3)
-    
-    #tp1,tp2=jaro_distance_relacionadas(t_lem, h_lem,sinT,HipT,sinH,hipH)
-    #new_data['Jaro-Winkler_relacionadas'].append(tp1)
-    #new_data['c2_estructura'].append(tp2)
-
-    #tp1,tp2=jaro_distance_contra(t_lem, h_lem,antT,HipT,antH,HipH)
-    #new_data['Jaro-Winkler_contra'].append(tp1)
-    #new_data['c1_estructura'].append(tp2)
-
+    new_data['Jaro-Winkler'].append(tp2)
     # # Obtencion de matriz de alineamiento, matriz de move earth y mutual information
     ma=np.dot(t_vectors_n,h_vectors_n.T)
     #print(t_clean,h_clean)
@@ -866,7 +537,7 @@ for i in range(len(textos)):
     #print(ma)
 
     # # Calculamos la entropia inicial de la matriz de distancias coseno sobre tokens de T y H
-    new_data['entropia_total'].append(entropia(ma.round(1).values.flatten())) 
+    new_data['entropia_total'].append(entropia(ma.round(2).values.flatten())) 
 
     # ###### BORRADO DE COSAS QUE NO OCUPO, SOLO NOS QUEDAMOS CON INFORMACIÓN DE TIPOS DE PALABRA: NOUN, VERB, ADJ Y ADV
     # # TAMBIÉN OMITIMOS EL VERBO BE DEBIDO A QUE POR LO REGULAR SE UTILIZA COMO AUXILIAR Y ES UN VERBO COPULATIVO
@@ -888,6 +559,8 @@ for i in range(len(textos)):
     m_mi = m_mi.drop(borrar,axis=1)
     b_col.extend(borrar)
     c_compatibilidad+=len(borrar)
+
+    
     # # #PARA REVISAR SI EXISTEN RELACIONES DE SIMILITUD SEMÁNTICA A TRAVÉS DEL USO DE CONCEPNET
     
     n_index = ma.shape[0]
@@ -904,20 +577,16 @@ for i in range(len(textos)):
             #print(a[j]+"_"+b[j] not in combinaciones,a[j]+"_"+b[j],combinaciones)
             if a[j]+"_"+b[j] not in combinaciones:
                 combinaciones.append(a[j]+"_"+b[j])
-                if(relacion_noentailment(a[j],b[j])):
+                if(relacion_noentailment(a[j],b[j])): #si hay relación de incompatibilidad entonces no la quitamos
                     c_incompatibilidad+=1
-                    borrar.append(b[j])
                 elif(relacion_entailment(a[j],b[j])):
                     borrar.append(b[j])
                     c_compatibilidad+=1
-                    borrar.append(b[j])
                 else:
                     print("Proceso de conjuntos")
-                    #sin1=bag_of_synonyms(a[j])
-                    #sin2=bag_of_synonyms(b[j])
                     sin1=diccionario_sinonimos[a[j]]
                     sin2=diccionario_sinonimos[b[j]]
-                    if len(sin1.intersection(sin2))>0: # son sinonimos
+                    if len(sin1.intersection(sin2))>0:
                         borrar.append(b[j])
                         c_compatibilidad+=1
                     else:
@@ -929,7 +598,7 @@ for i in range(len(textos)):
                                 b_H=bag_of_hyperonyms(e)
                                 Hip1=Hip1.union(b_H)
                                 diccionario_hiperonimos[e]=b_H
-                        if len(Hip1.intersection(sin2))>0:   # hiperonimo es un sinonimo
+                        if len(Hip1.intersection(sin2))>0:
                             borrar.append(b[j])
                             c_compatibilidad+=1
                         else:
@@ -941,7 +610,7 @@ for i in range(len(textos)):
                                     b_H=bag_of_hyponyms(e)
                                     hip2=hip2.union(b_H)
                                     diccionario_hyponimos[e]=b_H                                
-                            if len(sin1.intersection(hip2))>0:     # un sinonimo es un hiponimo
+                            if len(sin1.intersection(hip2))>0:   
                                 borrar.append(b[j])
                                 c_compatibilidad+=1
                             else:                              
@@ -959,7 +628,7 @@ for i in range(len(textos)):
     # #   ALMACENAMIENTO DE TODA LA INFORMACIÓN PROCESADA DE CARACTERÍSTICAS
     m_distancia = obtener_distancia(t_vectors,h_vectors,t_lem,h_lem,b_col,b_index)
     
-    new_data['distancias'].append(m_distancia.min().sum()) #cambie de maximas a sumas
+    new_data['distancias'].append(m_distancia.max().sum()) #cambie de maximas a sumas
     m_earth=m_earth*m_distancia
     if ma.shape[1]==0:
         new_data['entropias'].append(0)
@@ -969,28 +638,19 @@ for i in range(len(textos)):
         new_data['mutinf'].append(0)
         new_data['diferencias'].append(0)
     else:
-        new_data['entropias'].append(entropia(ma.round(1).values.flatten()))
+        new_data['entropias'].append(entropia(ma.round(2).values.flatten()))
         new_data['max_info'].append(ma.max().sum()/(ma.shape[1]))# 
-        new_data['sumas'].append(ma.sum().sum()/(ma.shape[1]))# 
-        new_data['mearts'].append(m_earth.min().sum()/(ma.shape[1]))# 
+        new_data['sumas'].append(ma.sum().sum()/(ma.shape[1]*ma.shape[0]))# 
+        new_data['mearts'].append(m_earth.max().sum()/(ma.shape[1]))# 
         new_data['mutinf'].append(m_mi.max().sum()/(ma.shape[1]))# 
         new_data['diferencias'].append(len(ma.columns)/len(ma.index))
 
     new_data['list_comp'].append(c_compatibilidad)
     new_data['list_incomp'].append(c_incompatibilidad)
-    # new_data['list_rel_con'].append(c_rel_concep)
-    # new_data['list_relaciones'].append(parejas)
-    # new_data['listas_malignf'].append(ma)
     new_data['list_m'].append(ma.shape[1])
     new_data['clases'].append(prueba.at[i,"gold_label"])
     print(ma)
 fin = time.time()
 df_resultados = pd.DataFrame(new_data)
-df_resultados.to_pickle("salida/nuevo9/"+sys.argv[1]+"_.pickle")
-df = pd.DataFrame([[key, diccionario_sinonimos[key]] for key in diccionario_sinonimos.keys()], columns=['word', 'Synonym'])
-df.to_pickle("salida/nuevo9/"+sys.argv[1]+"_Synonym.pickle")
-df = pd.DataFrame([[key, diccionario_hiperonimos[key]] for key in diccionario_hiperonimos.keys()], columns=['word', 'Hyperonym'])
-df.to_pickle("salida/nuevo9/"+sys.argv[1]+"_Hyperonym.pickle")
-df = pd.DataFrame([[key, diccionario_hyponimos[key]] for key in diccionario_hyponimos.keys()], columns=['word', 'Hyponym'])
-df.to_pickle("salida/nuevo9/"+sys.argv[1]+"_Hyponym.pickle")
+df_resultados.to_pickle("salida/nuevo6a/"+sys.argv[1]+"_.pickle")
 print("Tiempo que se llevo:",round(fin-inicio,2)," segundos")
