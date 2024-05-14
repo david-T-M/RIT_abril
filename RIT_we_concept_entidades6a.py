@@ -112,10 +112,10 @@ def jaro_distance(s1, s2,sinT,sinH,HipT,hipH) :
                 bandera=False
                 break
         if (bandera):
-            return 1.0; 
+            return 1.0,1.0; 
  
     if (len1 == 0 or len2 == 0) :
-        return 0.0; 
+        return 0.0,0.0; 
  
     # Maximum distance upto which matching 
     # is allowed 
@@ -166,7 +166,7 @@ def jaro_distance(s1, s2,sinT,sinH,HipT,hipH) :
     print(match)
     # If there is no match 
     if (match == 0) :
-        return 0.0; 
+        return 0.0,0.0;
  
     # Number of transpositions 
     t = 0; 
@@ -205,6 +205,9 @@ def relacion_noentailment(wt,wh):
         pass
     return False
 def negacion(nlp,texto):
+    b=1.0
+    if (type(texto)==type(b) or texto=="" or texto=="n/a" or texto=="nan"):
+        return 0,""
     doc = nlp(texto.lower())
     for token in doc:
         if(token.dep_=="neg"):
@@ -267,6 +270,11 @@ def representacion2(nlp,texto):
 deps_tags=["relcl","prep","amod","compound","pobj","conj","nsubj","advcl","dobj","neg",'acomp',"attr", 'nummod',"oprd","npadvmod"]
 palabras_no=["wear","dress","clothe"]
 def representacion(nlp,texto):
+    dir_sust=dict()
+    palabras=[]
+    b=1.0
+    if (type(texto)==type(b) or texto=="" or texto=="n/a" or texto=="nan"):
+        return dir_sust,palabras
     doc =nlp(texto)
     # poses=[]
     # tokens=[]
@@ -274,8 +282,6 @@ def representacion(nlp,texto):
     # children=[]
     # verb_vincu=[]
     # deps=[]
-    dir_sust=dict()
-    palabras=[]
     frase=""
     anterior="det"
     nsubj=""
@@ -644,7 +650,7 @@ for i in range(len(textos)):
         new_data['mearts'].append(m_earth.max().sum()/(ma.shape[1]))# 
         new_data['mutinf'].append(m_mi.max().sum()/(ma.shape[1]))# 
         new_data['diferencias'].append(len(ma.columns)/len(ma.index))
-
+        
     new_data['list_comp'].append(c_compatibilidad)
     new_data['list_incomp'].append(c_incompatibilidad)
     new_data['list_m'].append(ma.shape[1])
@@ -653,4 +659,10 @@ for i in range(len(textos)):
 fin = time.time()
 df_resultados = pd.DataFrame(new_data)
 df_resultados.to_pickle("salida/nuevo6a/"+sys.argv[1]+"_.pickle")
+df = pd.DataFrame([[key, diccionario_sinonimos[key]] for key in diccionario_sinonimos.keys()], columns=['word', 'Synonym'])
+df.to_pickle("salida/nuevo6a/"+sys.argv[1]+"_Synonym.pickle")
+df = pd.DataFrame([[key, diccionario_hiperonimos[key]] for key in diccionario_hiperonimos.keys()], columns=['word', 'Hyperonym'])
+df.to_pickle("salida/nuevo6a/"+sys.argv[1]+"_Hyperonym.pickle")
+df = pd.DataFrame([[key, diccionario_hyponimos[key]] for key in diccionario_hyponimos.keys()], columns=['word', 'Hyponym'])
+df.to_pickle("salida/nuevo6a/"+sys.argv[1]+"_Hyponym.pickle")
 print("Tiempo que se llevo:",round(fin-inicio,2)," segundos")

@@ -215,6 +215,7 @@ def negacion(nlp,texto):
             return 1, token.head.lemma_
     return 0,""
 
+
 def representacion_entidades(nlp,texto):
     doc = nlp(texto.lower())
     dir_sust=dict()
@@ -461,38 +462,46 @@ df_temp=pd.read_pickle("salida/nuevo4a/Hyponyms.pickle")
 for index,strings in df_temp.iterrows():
     diccionario_hyponimos[strings['word']]=strings['Hyponym']
 
+
 inicio = time.time()
 for i in range(len(textos)):
     print(i)
     print(textos[i])
-    # #r_t,t_clean_m=representacion_entidades(nlp,textos[i])
-    # #r_t,t_clean_m=representacion2(nlp,textos[i])
+    #r_t,t_clean_m=representacion_entidades(nlp,textos[i])
+    #r_t,t_clean_m=representacion2(nlp,textos[i])
     r_t,t_clean_m=representacion(nlp,textos[i])
     neg_t,negadat=negacion(nlp,textos[i])
     new_data['negT'].append(neg_t)
     new_data['verbT'].append(negadat)
-    # #print(list(r_t.keys()))
-    # for clave in r_t.keys():
-    #     print("texto",clave,r_t[clave])
+    #print(list(r_t.keys()))
+    for clave in r_t.keys():
+        print("texto",clave,r_t[clave])
     print(hipotesis[i])
-    # #r_h,h_clean_m = representacion_entidades(nlp,hipotesis[i])
-    # #r_h,h_clean_m = representacion2(nlp,hipotesis[i])
+    #r_h,h_clean_m = representacion_entidades(nlp,hipotesis[i])
+    #r_h,h_clean_m = representacion2(nlp,hipotesis[i])
     r_h,h_clean_m = representacion(nlp,hipotesis[i])
     neg_h,negadah=negacion(nlp,hipotesis[i])
     new_data['negH'].append(neg_h)
     new_data['verbH'].append(negadah)
-    # for clave in r_h.keys():
-    #     print("hipotesis",clave,r_h[clave])
+    for clave in r_h.keys():
+        print("hipotesis",clave,r_h[clave])
     if len(set(h_clean_m))!=0 and len(set(t_clean_m))!=0:
         new_data['overlap_ent'].append(len(set(t_clean_m).intersection(set(h_clean_m)))/len(set(h_clean_m)))
     else:
         new_data['overlap_ent'].append(0)
-    t_lem=ut.get_lemmas_(textos[i],nlp)
-    h_lem=ut.get_lemmas_(hipotesis[i],nlp)
-    t_vectors=ut.get_matrix_rep2(t_lem, nlp, normed=False)
-    h_vectors=ut.get_matrix_rep2(h_lem, nlp, normed=False)
-    t_vectors_n=ut.get_matrix_rep2(t_lem, nlp, normed=True)
-    h_vectors_n=ut.get_matrix_rep2(h_lem, nlp, normed=True)
+    #print(list(r_h.keys()))
+    # t_clean=' '.join(list(r_t.keys()))
+    # h_clean=' '.join(list(r_h.keys()))
+    t_clean=list(r_t.keys())
+    h_clean=list(r_h.keys())
+    print("clean")
+    print(t_clean)
+    print(h_clean)
+
+    t_vectors=ut.get_matrix_rep2(t_clean, nlp, normed=False)
+    h_vectors=ut.get_matrix_rep2(h_clean, nlp, normed=False)
+    t_vectors_n=ut.get_matrix_rep2(t_clean, nlp, normed=True)
+    h_vectors_n=ut.get_matrix_rep2(h_clean, nlp, normed=True)
     
     # print(t_vectors)
     # print(h_vectors)
@@ -500,6 +509,11 @@ for i in range(len(textos)):
     
     # s1=t_clean_m.split()
     # s2=h_clean_m.split()
+    t_lem=ut.get_lemmas_(textos[i],nlp)
+    h_lem=ut.get_lemmas_(hipotesis[i],nlp)
+    s1=t_lem
+    s2=h_lem
+    
     for t in t_lem:
         if t not in diccionario_sinonimos:
             diccionario_sinonimos[t]=bag_of_synonyms(t)
@@ -548,8 +562,8 @@ for i in range(len(textos)):
     ma=np.dot(t_vectors_n,h_vectors_n.T)
     #print(t_clean,h_clean)
     #print(len(t_vectors_n),len(h_vectors_n),len(t_clean),len(h_clean))
-    m_earth,m_mi=wasserstein_mutual_inf(t_vectors_n,h_vectors_n,t_lem,h_lem)
-    ma=pd.DataFrame(ma,index=t_lem,columns=h_lem)
+    m_earth,m_mi=wasserstein_mutual_inf(t_vectors_n,h_vectors_n,t_clean,h_clean)
+    ma=pd.DataFrame(ma,index=t_clean,columns=h_clean)
     #print(ma)
 
     # # Calculamos la entropia inicial de la matriz de distancias coseno sobre tokens de T y H
@@ -568,13 +582,6 @@ for i in range(len(textos)):
     new_data['list_T'].append(ma.shape[0])
     new_data['list_M'].append(ma.shape[1])
     
-    #procesamiento de cosas que son la misma entidad
-    borrar=list(set(t_lem).intersection(set(h_lem)))
-    ma = ma.drop(borrar,axis=1)
-    m_earth = m_earth.drop(borrar,axis=1)
-    m_mi = m_mi.drop(borrar,axis=1)
-    b_col.extend(borrar)
-
     # # #PARA REVISAR SI EXISTEN RELACIONES DE SIMILITUD SEMÁNTICA A TRAVÉS DEL USO DE CONCEPNET
     
     n_index = ma.shape[0]
@@ -582,6 +589,8 @@ for i in range(len(textos)):
     pasada=0
     #print(ma.index,ma.columns)
     combinaciones=[]
+
+    iguales=set(ma.index).intersection(set(ma.columns))
 
     while n_columns>0 and pasada<4:
         borrar=[]
@@ -593,42 +602,151 @@ for i in range(len(textos)):
                 combinaciones.append(a[j]+"_"+b[j])
                 if(relacion_noentailment(a[j],b[j])):
                     c_incompatibilidad+=1
-                elif(relacion_entailment(a[j],b[j])):
-                    borrar.append(b[j])
-                    c_compatibilidad+=1
-                else:
-                    print("Proceso de conjuntos")
-                    #sin1=bag_of_synonyms(a[j])
-                    #sin2=bag_of_synonyms(b[j])
-                    sin1=diccionario_sinonimos[a[j]]
-                    sin2=diccionario_sinonimos[b[j]]
-                    if len(sin1.intersection(sin2))>0:
-                        borrar.append(b[j])
-                        c_compatibilidad+=1
-                    else:
-                        Hip1=set()
-                        for e in list(sin1):
-                            if e in diccionario_hiperonimos:
-                                Hip1=Hip1.union(diccionario_hiperonimos[e])
-                            else:
-                                b_H=bag_of_hyperonyms(e)
-                                Hip1=Hip1.union(b_H)
-                                diccionario_hiperonimos[e]=b_H
-                        if len(Hip1.intersection(sin2))>0:
+                elif a[j]==b[j]: ## Si son palabras identicas entonces no hacemos más proceso
+                    print(a[j],b[j],True,"misma palabra")
+                    if r_h[b[j]]!='NA':
+                        atributos=r_h[b[j]].split(",")
+                        check=0
+                        for mod_h in atributos:
+                            for mod_t in r_t[a[j]].split(","):
+                                if(relacion_entailment(mod_t,mod_h)):
+                                    print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
+                                    check+=1
+                                elif(mod_t==mod_h):
+                                    check+=1
+                        if check==len(atributos):
                             borrar.append(b[j])
                             c_compatibilidad+=1
                         else:
-                            hip2=set()
-                            for e in list(sin2):
-                                if e in diccionario_hyponimos:
-                                    hip2=hip2.union(diccionario_hyponimos[e])
-                                else:
-                                    b_H=bag_of_hyponyms(e)
-                                    hip2=hip2.union(b_H)
-                                    diccionario_hyponimos[e]=b_H                                
-                            if len(sin1.intersection(hip2))>0:   
+                            print("faltaron atributos")
+                    else:
+                        borrar.append(b[j])
+                        c_compatibilidad+=1
+                else:# en otro caso buscamos una relación de generalidad
+                    print(r_t[a[j]].split(","))
+                    print(r_h[b[j]].split(","))
+                    r_e = relacion_entailment(a[j],b[j])
+                    if r_e:
+                        print(a[j],b[j], r_e)
+                        print("checar atributos")
+                        if r_h[b[j]]!='NA':
+                            print("lo que tiene:",b[j],r_h[b[j]])
+                            atributos=r_h[b[j]].split(",")
+                            check=0
+                            for mod_h in atributos:
+                                if r_t[a[j]]!='NA':
+                                    for mod_t in r_t[a[j]].split(","):
+                                        print(mod_h,mod_t)
+                                        if mod_h==mod_t:
+                                            print(mod_t,mod_h,True)
+                                            check+=1
+                                        else:
+                                            if(relacion_entailment(mod_t,mod_h)):
+                                                print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
+                                                check+=1
+                            if (check==len(atributos)):
                                 borrar.append(b[j])
                                 c_compatibilidad+=1
+                        else:
+                            borrar.append(b[j])
+                            c_compatibilidad+=1
+                    else:
+                        print("Proceso de conjuntos")
+                        sin1=diccionario_sinonimos[a[j]]
+                        sin2=diccionario_sinonimos[b[j]]
+                        if len(sin1.intersection(sin2))>0:
+                            print(a[j],b[j],"conjuntos de sinonimos",sin1.intersection(sin2))
+                            print("checar atributos")
+                            if r_h[b[j]]!='NA':
+                                print("lo que tiene:",b[j],r_h[b[j]])
+                                atributos=r_h[b[j]].split(",")
+                                check=0
+                                for mod_h in atributos:
+                                    if r_t[a[j]]!='NA':
+                                        for mod_t in r_t[a[j]].split(","):
+                                            print(mod_h,mod_t)
+                                            if mod_h==mod_t:
+                                                print(mod_t,mod_h,True)
+                                                check+=1
+                                            else:
+                                                if(relacion_entailment(mod_t,mod_h)):
+                                                    print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
+                                                    check+=1
+                                if check==len(atributos):
+                                    borrar.append(b[j])
+                                    c_compatibilidad+=1
+                            else:
+                                borrar.append(b[j])
+                                c_compatibilidad+=1
+                        else:
+                            Hip1=set()
+                            for e in list(sin1):
+                                Hip1=Hip1.union(diccionario_hiperonimos(e))
+                            if len(Hip1.intersection(sin2))>0:
+                                print(a[j],b[j],"Hiperonimos y sinonimos",Hip1.intersection(sin2))
+                                print("checar atributos")
+                                if 'NA'!=r_h[b[j]]:
+                                    print("lo que tiene:",b[j],r_h[b[j]])
+                                    atributos=r_h[b[j]].split(",")
+                                    check=0
+                                    for mod_h in atributos:
+                                        if r_t[a[j]]!='NA':
+                                            for mod_t in r_t[a[j]].split(","):
+                                                print(mod_h,mod_t)
+                                                if mod_h==mod_t:
+                                                    print(mod_t,mod_h,True)
+                                                    check+=1
+                                                else:
+                                                    if(relacion_entailment(mod_t,mod_h)):
+                                                        print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
+                                                        check+=1
+                                    if check==len(atributos):
+                                        borrar.append(b[j])
+                                        c_compatibilidad+=1
+                                else:
+                                    borrar.append(b[j])
+                                    c_compatibilidad+=1
+                            else:
+                                hip2=set()
+                                for e in list(sin2):
+                                    hip2=hip2.union(diccionario_hyponimos(e))
+                                if len(sin1.intersection(hip2))>0:
+                                    print(a[j],b[j],"Sinonimos e hiponimos",sin1.intersection(hip2))
+                                    print("checar atributos")
+                                    if r_h[b[j]]!='NA':
+                                        atributos=r_h[b[j]].split(",")
+                                        check=0
+                                        for mod_h in atributos:
+                                            if r_t[a[j]]!='NA':
+                                                for mod_t in r_t[a[j]].split(","):
+                                                    #print(mod_h,mod_t)
+                                                    if mod_h==mod_t:
+                                                        #print(mod_t,mod_h,True)
+                                                        check+=1
+                                                    else:
+                                                        if(relacion_entailment(mod_t,mod_h)):
+                                                            #print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
+                                                            check+=1
+                                        if check==len(atributos):
+                                            borrar.append(b[j])
+                                            c_compatibilidad+=1
+                                    else:
+                                        borrar.append(b[j])
+                                        c_compatibilidad+=1
+            #else:
+                #print(a[j],b[j],"ya se habia revisado")
+        for equal in iguales:
+            if equal+"_"+equal not in combinaciones:
+                if 'NA'!=r_h[equal]:
+                    for mod_h in r_h[equal].split(","):
+                        for mod_t in r_t[equal].split(","):
+                            #print(mod_t,mod_h,relacion_entailment(mod_t,mod_h))
+                            if(relacion_entailment(mod_t,mod_h)):
+                                borrar.append(equal)
+                                c_compatibilidad+=1
+                else:
+                    borrar.append(str(b[j]))
+                    c_compatibilidad+=1
         pasada+=1
         ma = ma.drop(borrar,axis=1)
         m_earth = m_earth.drop(borrar,axis=1)
@@ -638,7 +756,7 @@ for i in range(len(textos)):
     b_index=[0]
     
     # #   ALMACENAMIENTO DE TODA LA INFORMACIÓN PROCESADA DE CARACTERÍSTICAS
-    m_distancia = obtener_distancia(t_vectors,h_vectors,t_lem,h_lem,b_col,b_index)
+    m_distancia = obtener_distancia(t_vectors,h_vectors,t_clean,h_clean,b_col,b_index)
     
     new_data['distancias'].append(m_distancia.max().sum()) #cambie de maximas a sumas
     m_earth=m_earth*m_distancia
@@ -664,13 +782,6 @@ for i in range(len(textos)):
     print(ma)
 fin = time.time()
 df_resultados = pd.DataFrame(new_data)
-df_resultados.to_pickle("salida/nuevo4a/"+sys.argv[1]+"_.pickle")
-df = pd.DataFrame([[key, diccionario_sinonimos[key]] for key in diccionario_sinonimos.keys()], columns=['word', 'Synonym'])
-df.to_pickle("salida/nuevo4a/"+sys.argv[1]+"_Synonym.pickle")
-df = pd.DataFrame([[key, diccionario_hiperonimos[key]] for key in diccionario_hiperonimos.keys()], columns=['word', 'Hyperonym'])
-df.to_pickle("salida/nuevo4a/"+sys.argv[1]+"_Hyperonym.pickle")
-df = pd.DataFrame([[key, diccionario_hyponimos[key]] for key in diccionario_hyponimos.keys()], columns=['word', 'Hyponym'])
-df.to_pickle("salida/nuevo4a/"+sys.argv[1]+"_Hyponym.pickle")
-# df = pd.DataFrame([[key, diccionario_antonimos[key]] for key in diccionario_antonimos.keys()], columns=['word', 'Antonym'])
-# df.to_pickle("salida/nuevo4a/"+sys.argv[1]+"_Antonym.pickle")
+df_resultados.to_pickle("salida/nuevo4d/"+sys.argv[1]+"_.pickle")
+
 print("Tiempo que se llevo:",round(fin-inicio,2)," segundos")

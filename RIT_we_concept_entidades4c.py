@@ -193,12 +193,36 @@ def jaro_distance(s1, s2,sinT,sinH,HipT,hipH) :
     #Return the Jaro Similarity 
     return match / len2; 
 
+def relacion_entailment(wt,wh):
+    try:
+        concepts_wt = Label.get(text=wt, language='en').concepts
+        concepts_wh = Label.get(text=wh, language='en').concepts
+        for e in edges_between(concepts_wt, concepts_wh):
+            if wt == e.start.text and e.relation.name in relaciones_generales:
+                print(e.start.text, "-", e.end.text, "|", e.relation.name,e)
+                return True
+    except:
+        pass
+    return False
+
 def relacion_noentailment(wt,wh):
     try:
         concepts_wt = Label.get(text=wt, language='en').concepts
         concepts_wh = Label.get(text=wh, language='en').concepts
         for e in edges_between(concepts_wt, concepts_wh):
-            if wt == e.start.text and e.relation.name in ["distinct_from","antonym"]:
+            if e.relation.name in ["distinct_from","antonym"]:
+                print(e.start.text, "-", e.end.text, "|", e.relation.name,e)
+                return True
+    except:
+        pass
+    return False
+
+def relacion_conceptual(wt,wh):
+    try:
+        concepts_wt = Label.get(text=wt, language='en').concepts
+        concepts_wh = Label.get(text=wh, language='en').concepts
+        for e in edges_between(concepts_wt, concepts_wh):
+            if e.relation.name in ["related_to","similar_to"]:
                 print(e.start.text, "-", e.end.text, "|", e.relation.name,e)
                 return True
     except:
@@ -276,6 +300,7 @@ def representacion(nlp,texto):
     b=1.0
     if (type(texto)==type(b) or texto=="" or texto=="n/a" or texto=="nan"):
         return dir_sust,palabras
+    doc =nlp(texto)
     doc =nlp(texto)
     # poses=[]
     # tokens=[]
@@ -375,17 +400,7 @@ def representacion(nlp,texto):
     # print("deps",deps)
     return dir_sust,palabras
 
-def relacion_entailment(wt,wh):
-    try:
-        concepts_wt = Label.get(text=wt, language='en').concepts
-        concepts_wh = Label.get(text=wh, language='en').concepts
-        for e in edges_between(concepts_wt, concepts_wh):
-            if wt == e.start.text and e.relation.name in relaciones_generales:
-                print(e.start.text, "-", e.end.text, "|", e.relation.name,e)
-                return True
-    except:
-        pass
-    return False
+
 
 nlp = spacy.load("en_core_web_md") # modelo de nlp
 
@@ -439,7 +454,7 @@ hipotesis = prueba["sentence2"].to_list()
 # lista de listas para dataframe
 new_data = {'sumas' : [], 'distancias' : [], 'entropia_total' : [],'entropias' : [],'mutinf' : [], 
             'mearts' : [], 'max_info' : [],  'list_comp' : [], 'diferencias' :[], 'list_incomp':[],
-            'list_M' : [], 'list_m' : [], 'list_T' : [], 'Jaro-Winkler_rit':[],
+            'list_M' : [], 'list_m' : [], 'list_T' : [], 'Jaro-Winkler_rit':[],'rel_conceptuales':[],
             'negT' : [], 'verbT' : [], 'negH' : [], 'verbH':[], 'overlap_ent':[],'clases' : []}
 
 
@@ -562,6 +577,7 @@ for i in range(len(textos)):
     # # alguna propiedad, estado o equivalencia del mismo, por ejemplo: "Este plato es bueno". "Juan está casado".
     c_compatibilidad=0
     c_incompatibilidad=0
+    c_conceptuales=0
     # c_rel_concep=0
     b_col=[0]
 
@@ -573,6 +589,9 @@ for i in range(len(textos)):
     ma = ma.drop(borrar,axis=1)
     m_earth = m_earth.drop(borrar,axis=1)
     m_mi = m_mi.drop(borrar,axis=1)
+    ma = ma.drop(borrar)
+    m_earth = m_earth.drop(borrar)
+    m_mi = m_mi.drop(borrar)
     b_col.extend(borrar)
 
     # # #PARA REVISAR SI EXISTEN RELACIONES DE SIMILITUD SEMÁNTICA A TRAVÉS DEL USO DE CONCEPNET
@@ -582,9 +601,9 @@ for i in range(len(textos)):
     pasada=0
     #print(ma.index,ma.columns)
     combinaciones=[]
-
-    while n_columns>0 and pasada<4:
+    while n_columns>0 and n_index>0 and pasada<4:
         borrar=[]
+        borrar_i=[]
         a = ma.idxmax().values
         b = ma.columns
         for j in range(len(a)):
@@ -592,9 +611,12 @@ for i in range(len(textos)):
             if a[j]+"_"+b[j] not in combinaciones:
                 combinaciones.append(a[j]+"_"+b[j])
                 if(relacion_noentailment(a[j],b[j])):
+                    borrar.append(b[j])
+                    borrar_i.append(a[j])
                     c_incompatibilidad+=1
                 elif(relacion_entailment(a[j],b[j])):
                     borrar.append(b[j])
+                    borrar_i.append(a[j])
                     c_compatibilidad+=1
                 else:
                     print("Proceso de conjuntos")
@@ -604,6 +626,7 @@ for i in range(len(textos)):
                     sin2=diccionario_sinonimos[b[j]]
                     if len(sin1.intersection(sin2))>0:
                         borrar.append(b[j])
+                        borrar_i.append(a[j])
                         c_compatibilidad+=1
                     else:
                         Hip1=set()
@@ -616,6 +639,7 @@ for i in range(len(textos)):
                                 diccionario_hiperonimos[e]=b_H
                         if len(Hip1.intersection(sin2))>0:
                             borrar.append(b[j])
+                            borrar_i.append(a[j])
                             c_compatibilidad+=1
                         else:
                             hip2=set()
@@ -628,11 +652,22 @@ for i in range(len(textos)):
                                     diccionario_hyponimos[e]=b_H                                
                             if len(sin1.intersection(hip2))>0:   
                                 borrar.append(b[j])
+                                borrar_i.append(a[j])
                                 c_compatibilidad+=1
+                            else:
+                                if(relacion_conceptual(a[j],b[j])):
+                                    borrar.append(b[j])
+                                    borrar_i.append(a[j])
+                                    c_conceptuales+=1
         pasada+=1
         ma = ma.drop(borrar,axis=1)
         m_earth = m_earth.drop(borrar,axis=1)
         m_mi = m_mi.drop(borrar,axis=1)
+        
+        ma = ma.drop(borrar_i)
+        m_earth = m_earth.drop(borrar_i)
+        m_mi = m_mi.drop(borrar_i)
+        n_index = ma.shape[0]
         n_columns = ma.shape[1]
         b_col.extend(borrar)
     b_index=[0]
@@ -642,7 +677,7 @@ for i in range(len(textos)):
     
     new_data['distancias'].append(m_distancia.max().sum()) #cambie de maximas a sumas
     m_earth=m_earth*m_distancia
-    if ma.shape[1]==0:
+    if ma.shape[1]==0 or ma.shape[0]==0:
         new_data['entropias'].append(0)
         new_data['max_info'].append(0)
         new_data['sumas'].append(0)
@@ -659,18 +694,19 @@ for i in range(len(textos)):
 
     new_data['list_comp'].append(c_compatibilidad)
     new_data['list_incomp'].append(c_incompatibilidad)
+    new_data['rel_conceptuales'].append(c_conceptuales)
     new_data['list_m'].append(ma.shape[1])
     new_data['clases'].append(prueba.at[i,"gold_label"])
     print(ma)
 fin = time.time()
 df_resultados = pd.DataFrame(new_data)
-df_resultados.to_pickle("salida/nuevo4a/"+sys.argv[1]+"_.pickle")
+df_resultados.to_pickle("salida/nuevo4c/"+sys.argv[1]+"_.pickle")
 df = pd.DataFrame([[key, diccionario_sinonimos[key]] for key in diccionario_sinonimos.keys()], columns=['word', 'Synonym'])
-df.to_pickle("salida/nuevo4a/"+sys.argv[1]+"_Synonym.pickle")
-df = pd.DataFrame([[key, diccionario_hiperonimos[key]] for key in diccionario_hiperonimos.keys()], columns=['word', 'Hyperonym'])
-df.to_pickle("salida/nuevo4a/"+sys.argv[1]+"_Hyperonym.pickle")
-df = pd.DataFrame([[key, diccionario_hyponimos[key]] for key in diccionario_hyponimos.keys()], columns=['word', 'Hyponym'])
-df.to_pickle("salida/nuevo4a/"+sys.argv[1]+"_Hyponym.pickle")
+# df.to_pickle("salida/nuevo4b/"+sys.argv[1]+"_Synonym.pickle")
+# df = pd.DataFrame([[key, diccionario_hiperonimos[key]] for key in diccionario_hiperonimos.keys()], columns=['word', 'Hyperonym'])
+# df.to_pickle("salida/nuevo4b/"+sys.argv[1]+"_Hyperonym.pickle")
+# df = pd.DataFrame([[key, diccionario_hyponimos[key]] for key in diccionario_hyponimos.keys()], columns=['word', 'Hyponym'])
+# df.to_pickle("salida/nuevo4b/"+sys.argv[1]+"_Hyponym.pickle")
 # df = pd.DataFrame([[key, diccionario_antonimos[key]] for key in diccionario_antonimos.keys()], columns=['word', 'Antonym'])
-# df.to_pickle("salida/nuevo4a/"+sys.argv[1]+"_Antonym.pickle")
+# df.to_pickle("salida/nuevo4b/"+sys.argv[1]+"_Antonym.pickle")
 print("Tiempo que se llevo:",round(fin-inicio,2)," segundos")

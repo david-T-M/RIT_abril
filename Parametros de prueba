@@ -65,6 +65,8 @@ Experimento 9
 no lematizamos el texto ni la hipotesis
 mismo proceso que el 8
 
+--------------------------------------------------------------------------------
+
 Se han generado nuevamente los conjuntos de sinonimos, hiperonimos e hiponimos por que se tenia una realción que no correspondia
 la de related_to se almacenaron en nuevo4a 
 estos diccionarios se utilizaran para el experimento 6a que ya esta preparado para leeer estos diccionarios
@@ -74,10 +76,22 @@ y se agregaron las siguientes características
 -entropia_total y entropias se redondeo a 2 decimales
 -sumas sumo todo y divido entre shape¨*shape
 -meart maximos 
+Aqui hay que tener en cuenta que aqui se agregan tipos de palabras
 
-Expeimento 4a Replicar resultados
-Se crearon nuevos diccionarios sin la relación related_to en 4a RTE3, GHS
 
+Expeimento 4a Replicar resultados (Replicado)
+Se crearon nuevos diccionarios sin la relación related_to en 4a RTE3, GHS, SICK
+Se esta procesando SNLI, una vez tenido esto agregamos los diccionarios 
+falta MultiNLI, una vez tenido esto agregamos los diccionarios
+
+Esperimento 4b se realiza a partir del 4a, se agrega
+relaciones_conceptuales
+Se eliminan de la matriz
+antonimos y distintos
+relaciones relaciones_conceptuales
+
+Experimento 4c
+borra tambien las palabras en la matriz de alineamiento del texto
 
 Cada vez que se genera un entrenamiento sobre los corpus anteriores, se agregan los sinonimos, hiperonimos e hiponimos 
 en el diccionario para reducir considerablemente los tiempos de ejecución de nuevos experimentos. Por ejemplo, el experimento 4 y 5 ya tardan menos en 
