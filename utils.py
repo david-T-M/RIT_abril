@@ -41,6 +41,7 @@ def get_vector2(w, nlp, nf=300):
         v = nlp.wv[str(w)]
     else: 
         v = np.zeros((1,300))[0]
+        #v = np.ones((1,300))[0]
     return v.astype(np.float32)
 
 # Some cleaning especially with respect to weird punctuation
@@ -82,7 +83,7 @@ def get_matrix_rep(text, nlp, pos_to_remove=['PUNCT'], normed=True,
 def get_matrix_rep2(words,nlp, normed=True):
     vecs = np.array([get_vector2(w,nlp) for w in words], dtype=np.float32)
     if len(vecs) == 0:
-        vecs = np.zeros((1,300), dtype=np.float32)
+        vecs = np.ones((1,300), dtype=np.float32)
 
     # Normalize vectors if desired
     if normed:

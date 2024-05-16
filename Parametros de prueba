@@ -96,3 +96,26 @@ borra tambien las palabras en la matriz de alineamiento del texto
 Cada vez que se genera un entrenamiento sobre los corpus anteriores, se agregan los sinonimos, hiperonimos e hiponimos 
 en el diccionario para reducir considerablemente los tiempos de ejecución de nuevos experimentos. Por ejemplo, el experimento 4 y 5 ya tardan menos en 
 procesar sus ejemplos para cada corpus.
+
+Experimento 4d
+
+Se realizaron nuevamente pruebas con los datos las entidades
+el proceso es que primero se generarn las entidades con sus atributos
+con unicamente los atributos se conforman las columnas e indices de la matriz de alineamiento
+la matriz de alineamiento dirige entonces el match
+para posteriormente identificar si se refieren a la misma entidad con sus respectivos atributos
+es decir h_e esta contenida en t_e con sus atributos
+
+Experimento 4e
+
+Es lo mismo que 4a solo que cuando encuentra un antonimo o distinct_from se sale del proceso de reducción
+de la matriz de alineamiento y se calcula las features con los datos que quedan
+
+Experimento 4f
+igula que el 4e 
+se quito el H intersection h en relacion generales
+kulback leibler se agrega aunque a la inversa es decir qk vs pk (identificar significado)
+checar algunas ideas de relaciones como la siguiente
+entropias por relacion y tokens que no hay relación idea a probar validar.
+se crean vectores de unos para palabras que no existen
+
