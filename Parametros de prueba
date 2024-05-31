@@ -105,6 +105,7 @@ con unicamente los atributos se conforman las columnas e indices de la matriz de
 la matriz de alineamiento dirige entonces el match
 para posteriormente identificar si se refieren a la misma entidad con sus respectivos atributos
 es decir h_e esta contenida en t_e con sus atributos
+CGECAR ATRIBUTIS
 
 Experimento 4e
 
@@ -119,3 +120,12 @@ checar algunas ideas de relaciones como la siguiente
 entropias por relacion y tokens que no hay relación idea a probar validar.
 se crean vectores de unos para palabras que no existen
 
+Experimento 4g
+lo mismo que 4f pero sacamos las probabilidades de las relaciones en cada ejemplo de las entropias
+
+Experimento h
+regresamos a lemmas 
+movimos los siguiente:
+primero revisamos relaciones de entailment despues de antonimia y por ultimo neutralidad
+
+hay que agregar otras cosas 
